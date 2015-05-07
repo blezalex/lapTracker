@@ -36,7 +36,7 @@ namespace LapTracker
             while(true)
             {
                 var id = await sr.ReadLineAsync();
-                textBox1.AppendText(id + Environment.NewLine);
+                textBox1.AppendText(DateTime.Now + " " + id + Environment.NewLine);
 
                 var currentTime = DateTime.Now;
                 if (!lastSeenTime.ContainsKey(id))
@@ -49,7 +49,7 @@ namespace LapTracker
                 if (currentTime - lastSeenCurrentId < MinLapTime)
                     continue; // ignore as seen in less than lap time
 
-                textBox2.AppendText(string.Format("{0} Lap time: {1}\r\n", id, currentTime - lastSeenCurrentId));
+                textBox2.AppendText(string.Format("{2} {0} Lap time: {1}\r\n", id, currentTime - lastSeenCurrentId, DateTime.Now));
                 lastSeenTime[id] = currentTime;
             }
             
