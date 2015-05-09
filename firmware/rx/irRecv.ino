@@ -66,11 +66,12 @@ void onIrDataPinChange(){
          }
 
          // LOW -> HIGH
-         if (lowDuration > 300 && lowDuration < 500)
-       {
-        state = WAITING_BITS;
-        return;
-       }
+         if (lowDuration > 300 && lowDuration < 550)
+         {
+          state = WAITING_BITS;
+          bitGroupIdx = -1;
+          return;
+         }
          break;
 
        case WAITING_BITS:
@@ -102,7 +103,7 @@ void onIrDataPinChange(){
           }
 
           // LOW -> HIGH
-        if (lowDuration > 100 && lowDuration < 250)
+        if (lowDuration > 100 && lowDuration < 300)
         {
           bitGroupIdx++;
           highStartTime = time;
@@ -113,7 +114,6 @@ void onIrDataPinChange(){
    }
 
   state = STATE_WAITING_HEADER;
-  bitGroupIdx = -1;
 }
 
 

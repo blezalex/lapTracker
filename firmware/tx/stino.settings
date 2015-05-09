@@ -1,8 +1,8 @@
 {
     "arduino_folder": "D:\\Apps\\Dev\\arduino-1.0.3", 
     "baudrate": 8, 
-    "board": 0, 
-    "full_compilation": false, 
+    "board": 49, 
+    "full_compilation": true, 
     "platform": 1, 
     "platform_name": "Arduino AVR Boards", 
     "programmer": {

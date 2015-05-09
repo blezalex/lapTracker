@@ -12,26 +12,26 @@ volatile uint8_t ovfCnt = 0;
 
 inline void sendPulses(uint8_t pulses, bool high)
 {
-//	uint16_t dealyUs = 1000 / CARRIER_FREQ * pulses;
-//	delayMicroseconds(dealyUs);
-
 	uint8_t currentVal = ovfCnt;
 	while(currentVal == ovfCnt); // wait until once cycle finishes
 
 	if (high)
 	{
-		TCCR2A |= _BV(COM2B1);
+		TCCR1A |= _BV(COM1A1);
 	}
 
-	TIMSK2 = 0;
+	// uint16_t dealyUs = 1000 / CARRIER_FREQ * pulses;
+	// delayMicroseconds(dealyUs);
+
+	TIMSK = 0;
 	uint8_t finOvfCntVal = ovfCnt + pulses;
-	TIMSK2 = _BV(TOIE2);
+	TIMSK = _BV(TOIE1);
 
 	while (ovfCnt != finOvfCntVal)
 	{
 	}
 
-	TCCR2A &= ~(_BV(COM2B1));
+	TCCR1A &= ~(_BV(COM1A1));
 }
 
 void sendHigh(uint8_t pulses)
@@ -88,24 +88,37 @@ void setup()
 {
   Serial.begin(9600);
 
-  pinMode(3, OUTPUT);
+  pinMode(9, OUTPUT);
 
-  TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20); // Just enable output on Pin 3 and disable it on Pin 11
-  TCCR2B = _BV(WGM22) | _BV(CS22);
-  OCR2A = 51; // defines the frequency 51 = 38.4 KHz, 54 = 36.2 KHz, 58 = 34 KHz, 62 = 32 KHz
-  OCR2B = 26;  // deines the duty cycle - Half the OCR2A value for 50%
-  TCCR2B = TCCR2B & 0b00111000 | 0x2; // select a prescale value of 8:1 of the system clock
+  DDRC |= _BV(2); // green led
+  PORTC |= _BV(2);
 
-  TIFR2 = _BV(TOV2);
-  TIMSK2 = _BV(TOIE2);
+  // TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20); // Just enable output on Pin 3 and disable it on Pin 11
+  // TCCR2B = _BV(WGM22) | _BV(CS22);
+  // OCR2A = 51; // defines the frequency 51 = 38.4 KHz, 54 = 36.2 KHz, 58 = 34 KHz, 62 = 32 KHz
+  // OCR2B = 26;  // deines the duty cycle - Half the OCR2A value for 50%
+  // TCCR2B = TCCR2B & 0b00111000 | 0x2; // select a prescale value of 8:1 of the system clock
 
-  // TCCR2A = (1 << COM2B1) | (1 << WGM20) | (1 << WGM21) | (1 << WGM22);
-  // TCCR2B = (1<< CS20);
+  // TIFR2 = _BV(TOV2);
+  // TIMSK2 = _BV(TOIE2);
 
-  // OCR2B = 126;
+  // // TCCR2A = (1 << COM2B1) | (1 << WGM20) | (1 << WGM21) | (1 << WGM22);
+  // // TCCR2B = (1<< CS20);
+
+  // // OCR2B = 126;
+
+  const uint16_t pwmval = F_CPU / 2000 / CARRIER_FREQ;
+  TCCR1A = _BV(WGM11);
+  TCCR1B = _BV(WGM13) | _BV(CS10);
+  ICR1 = pwmval;
+  OCR1A = pwmval / 2;
+
+  // configure interrupts
+  TIFR = _BV(TOV1);
+  TIMSK = _BV(TOIE1);
 }
 
-ISR(TIMER2_OVF_vect)
+ISR(TIMER1_OVF_vect)
 {
 	++ovfCnt;
 }
@@ -114,5 +127,5 @@ void loop() {
 
 	sendQuadId(12);
 
-	delay(2); // should be at leat 5 since message is 4 ms long
+	delay(500); // NOT real TIMER! TIMER1 is re-configured for PWM
 }
