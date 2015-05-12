@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html ng-app="lapTracker">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/css/ext/bootstrap.min.css">
+		<script src="/js/ext/angular.min.js"></script>	
+		<script src="/js/ext/Chart.js"></script>
+		<script src="/js/ext/angular-chart.js/angular-chart.js"></script>
+		<script src="/js/mainController.js"></script>
+	</head>
+	
+	<body ng-controller="MainController">
+		<div class="container">		
+			<div>
+				<h2>Best time: </h2> <span>{{bestLapTime | number:3}} sec</span>
+			</div>
+			
+			<div>
+				<h2>Lap times:</h2>
+				<table class="table table-striped table-hover table-condensed">
+					<tr>
+						<th>#</th>
+						<th>Time (sec)</th>
+					</tr>
+					<tr ng-repeat="lapTime in lapTimes" ng-class="lapTime == bestLapTime ? 'success': ''">
+						<td>
+							Lap {{$index + 1}}
+						</td>
+						<td>
+							{{lapTime | number:3}}
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<canvas id="lapChart" class="chart chart-line" data="[lapTimes]" labels="labels" legend="true"> </canvas> 
+
+			<div>
+				<button ng-click="reset();" class="btn btn-lg btn-danger">Reset</button>
+			</div>
+
+			<audio></audio>
+		</div>
+	</body>
+</html>
