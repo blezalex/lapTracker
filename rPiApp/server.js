@@ -1,12 +1,29 @@
 var mainServerListenPort = process.argv[2];
 var serialPortPath = process.argv[3];
 
+var useCaptivePortal = true;
+var captivePortalAddress = 'laptracker.wifi';
+
 console.log('Listening at: ' + mainServerListenPort);
 
 var connect = require('connect');
 var serveStatic = require('serve-static');
 
-connect().use(serveStatic('www/')).listen(mainServerListenPort);
+var connected = connect();
+
+connected.use(function captivePortal(req, res, next) {
+  if (req.headers.host != captivePortalAddress) {
+  	res.writeHead(302, {
+  	'Location': 'http://' + captivePortalAddress + '/'
+	});
+	res.end();
+  }
+  else {
+  	next();
+  }
+});
+
+connected.use(serveStatic('www/')).listen(mainServerListenPort);
 
 
 var http = require('http');
