@@ -31,13 +31,9 @@ var wsServer = new WebSocketServer({
     autoAcceptConnections: false
 });
 
-function originIsAllowed(origin) {
-  // put logic here to detect whether the specified origin is allowed.
-  return true;
-}
-
 
 var trackingRacers = ['CC'];
+var minLapTime = 5000; // 5000 ms
 
 function LapTracker(checkpointCrossCallback) {
 	var lapsPerRacer = { };
@@ -61,6 +57,10 @@ function LapTracker(checkpointCrossCallback) {
 		var crossTime = process.hrtime();
 
 		var corssTimeMs = (1e9 * crossTime[0] + crossTime[1]) / 1e6; // convert to ms 
+
+		if (lapsForThisRacer.length > 0 && (corssTimeMs - lapsForThisRacer[lapsForThisRacer.length - 1]) < minLapTime) {
+			return;
+		}
 
 		lapsForThisRacer.push(corssTimeMs);
 
@@ -100,13 +100,6 @@ var tracker = new LapTracker(broadcastCheckpointCrossEvent);
 
 
 wsServer.on('request', function(request) {
-    if (!originIsAllowed(request.origin)) {
-      // Make sure we only accept requests from an allowed origin
-      request.reject();
-      console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
-      return;
-    }
-
     var connection = request.accept(null, request.origin);
     console.log((new Date()) + ' Connection accepted.');
 
