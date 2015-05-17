@@ -128,16 +128,34 @@ wsServer.on('request', function(request) {
 });
 
 
-var SerialPort = require("serialport").SerialPort
-var serialPort = new SerialPort(serialPortPath, {
-  baudrate: 9600,
-  parser: require("serialport").parsers.readline("\n")
-});
+var serialLib = require("serialport");
+var SerialPort = serialLib.SerialPort;
 
-serialPort.on("data", function (line) {
-  console.log(line);
-  tracker.recordCheckpointEvent(line.replace(/^\s+|\s+$/g, ''));
-});
+var serialSettings = {
+	baudrate: 9600,
+	parser: serialLib.parsers.readline("\n")
+};
+var serialPort = new SerialPort(serialPortPath, serialSettings, false);
+
+var openSerial = function(path){
+	serialPort.open(function(error) {
+		if (!error) {
+			console.log('serial opened');
+
+			serialPort.on("data", function (line) {
+			  console.log(line);
+			  tracker.recordCheckpointEvent(line.replace(/^\s+|\s+$/g, ''));
+			});
+		}
+		else {
+			console.log('serial open failed, retrying', error);
+			setTimeout(openSerial, 1000);
+		}
+	});
+}
+
+openSerial();
+
 
 var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
