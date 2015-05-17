@@ -1,7 +1,12 @@
+var mainServerListenPort = process.argv[2];
+var serialPortPath = process.argv[3];
+
+console.log('Listening at: ' + mainServerListenPort);
+
 var connect = require('connect');
 var serveStatic = require('serve-static');
 
-connect().use(serveStatic('www/')).listen(8080);
+connect().use(serveStatic('www/')).listen(mainServerListenPort);
 
 
 var http = require('http');
@@ -130,6 +135,17 @@ wsServer.on('request', function(request) {
 });
 
 
+var SerialPort = require("serialport").SerialPort
+var serialPort = new SerialPort(serialPortPath, {
+  baudrate: 9600,
+  parser: require("serialport").parsers.readline("\n")
+});
+
+serialPort.on("data", function (line) {
+  console.log(line);
+  tracker.recordCheckpointEvent(line.replace(/^\s+|\s+$/g, ''));
+});
+
 var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
 rl.setPrompt('guess> ');
@@ -139,3 +155,5 @@ rl.on('line', function(line) {
     tracker.recordCheckpointEvent(line);
     rl.prompt();
 });
+
+
